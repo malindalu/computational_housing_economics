@@ -77,5 +77,4 @@ def generate_plot(df, town):
      ax.set_ylim(0, 14000)
      ax.set_yticks(np.arange(0, 14000, 4000))
      plt.legend(loc=1)
-     plt.savefig('test')
      return plt
