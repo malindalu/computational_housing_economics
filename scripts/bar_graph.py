@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import TOWNS
+from utils import TOWNS, WELLESLEY_MAX_SECOND_LOAN, WELLESLEY_AFR_FRACTION
 
 def filter_df(df):
      # Define date filter
@@ -17,7 +17,7 @@ def filter_df(df):
 
      return df
 
-def calculate_monthly_payments(df, down_payment_percent=0.5):
+def calculate_monthly_payments(df, max_second_loan = WELLESLEY_MAX_SECOND_LOAN):
      # Process each town
      for town in TOWNS:
           if town not in df.columns:
@@ -29,15 +29,18 @@ def calculate_monthly_payments(df, down_payment_percent=0.5):
           # Calculate the Conventional Loan (CL) monthly payment
           df[f'{town}_CL'] = zhvi_column * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1)
           
-          mortgage_amount = zhvi_column * (1 - down_payment_percent)
+          mortgage_amount = zhvi_column / 2 # applicable amount
 
           # Calculate the MRRP (Modified Reduced Rate Payment)
           df[f'{town}_MRRP'] = np.where(
-               mortgage_amount < 550000,
-               ((mortgage_amount) * (df['afr_month'] / 2)) + 
+               mortgage_amount < max_second_loan,
+               # if 50% of applicable amount is the lesser
+               # 1/2 at half AFR rate and the other half at the original/given mortgage rate
+               (mortgage_amount * (df['afr_month'] * WELLESLEY_AFR_FRACTION)) + 
                ((mortgage_amount) * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1)),
-               (550000 * (df['afr_month'] / 2)) + 
-               ((zhvi_column - 550000) * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1))
+               # else, 550000 max is the lesser
+               (max_second_loan * (df['afr_month'] * WELLESLEY_AFR_FRACTION)) + 
+               ((zhvi_column - max_second_loan) * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1))
           )
 
           # # Calculate the MRRP (Modified Reduced Rate Payment)

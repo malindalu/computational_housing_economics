@@ -8,6 +8,9 @@ TOWNS = ["Acton", "Arlington", "Ashland", "Bedford", "Belmont", "Boston", "Brook
          "Sharon", "Sherborn", "Somerville", "Southborough", "Stow", "Sudbury", "Walpole", "Waltham", "Watertown", "Wayland",
          "Wellesley", "Weston", "Westwood", "Winchester"]
 
+WELLESLEY_MAX_SECOND_LOAN = 550000
+WELLESLEY_AFR_FRACTION = 1/2
+
 def process_file(file_path):
      # Import Excel data
      df = pd.read_excel(file_path, sheet_name=0)
