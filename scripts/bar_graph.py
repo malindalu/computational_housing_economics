@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 from utils import TOWNS, WELLESLEY_MAX_SECOND_LOAN, WELLESLEY_AFR_FRACTION
 
 def filter_df(df):
@@ -57,27 +58,92 @@ def calculate_monthly_payments(df, max_second_loan = WELLESLEY_MAX_SECOND_LOAN):
      return df
 
 def generate_plot(df, town):
-     if f'{town}_MRRP' not in df.columns or  f'{town}_dif' not in df.columns:
-          return None
-     # create index to help lable x axis based on year and still plot by month
+     # if f'{town}_MRRP' not in df.columns or  f'{town}_dif' not in df.columns:
+     #      return None
+     # # create index to help lable x axis based on year and still plot by month
+     # all_months = pd.MultiIndex.from_product([range(2016, 2025), range(1, 13)], names=["year", "month"])
+     # df = df.set_index(["year", "month"]).reindex(all_months).reset_index()
+
+     # _, ax = plt.subplots(figsize=(10, 6))
+     # ax.bar(df.index, df[f'{town}_MRRP'], color='blue',label='w/ Program', alpha=0.5)
+     # ax.bar(df.index, df[f'{town}_dif'], bottom=df[f'{town}_MRRP'], color='orange', label='w/o program', alpha=0.5)
+
+     # # labeling
+     # ax.set_title(f'Comparison of Mortgage Payments for {town}')
+     # ax.set_xlabel('Month')
+     # ax.set_ylabel('Monthly Payment ($)')
+
+     # yearly_ticks = df[df['month'] == 1].index # start year label at january, can change
+     # ax.set_xticks(yearly_ticks)
+     # ax.set_xticklabels(df.loc[yearly_ticks, 'year'])
+
+     # # set y ticks
+     # ax.set_ylim(0, 14000)
+     # ax.set_yticks(np.arange(0, 14000, 4000))
+     # plt.legend(loc=1)
+     # return plt
+
+     if f'{town}_MRRP' not in df.columns or f'{town}_dif' not in df.columns:
+        return None
+
+     # Create index to help label x-axis based on year and still plot by month
      all_months = pd.MultiIndex.from_product([range(2016, 2025), range(1, 13)], names=["year", "month"])
      df = df.set_index(["year", "month"]).reindex(all_months).reset_index()
 
-     _, ax = plt.subplots(figsize=(10, 6))
-     ax.bar(df.index, df[f'{town}_MRRP'], color='blue',label='w/ Program', alpha=0.5)
-     ax.bar(df.index, df[f'{town}_dif'], bottom=df[f'{town}_MRRP'], color='orange', label='w/o program', alpha=0.5)
+     df['year_month'] = df['year'].astype(str) + '-' + df['month'].astype(str).str.zfill(2)
+     df[f'{town}_without_program'] = df[f'{town}_MRRP'] + df[f'{town}_dif']
 
-     # labeling
-     ax.set_title(f'Comparison of Mortgage Payments for {town}')
-     ax.set_xlabel('Month')
-     ax.set_ylabel('Monthly Payment ($)')
 
-     yearly_ticks = df[df['month'] == 1].index # start year label at january, can change
-     ax.set_xticks(yearly_ticks)
-     ax.set_xticklabels(df.loc[yearly_ticks, 'year'])
+     # Create traces for the bar chart
+     fig = go.Figure()
+     
+     # Bar for 'w/ Program'
+     fig.add_trace(
+          go.Bar(
+               x=df.index, 
+               y=df[f'{town}_MRRP'], 
+               name='w/ Program', 
+               marker_color='blue',
+               opacity=0.7,
+               hovertemplate=(
+               'w/ program: %{y}<extra></extra><br>' 
+               'difference: %{customdata:$,.2f}<br>'),
+               customdata=df[f'{town}_dif'].values
+          )
+          
+     )
 
-     # set y ticks
-     ax.set_ylim(0, 14000)
-     ax.set_yticks(np.arange(0, 14000, 4000))
-     plt.legend(loc=1)
-     return plt
+     # Bar for 'w/o program'
+     fig.add_trace(
+          go.Bar(
+               x=df.index, 
+               y=df[f'{town}_dif'], 
+               name='w/o Program', 
+               marker_color='orange',
+               opacity=0.7,
+               hovertemplate='w/o program: %{customdata:$,.2f}<extra></extra>',
+               customdata=(df[f'{town}_dif'] + df[f'{town}_MRRP']).values,
+               base=df[f'{town}_MRRP']
+          )
+     )
+
+     # Update layout for titles and labels
+     fig.update_layout(
+          title=f'Comparison of Mortgage Payments for {town}',
+          xaxis=dict(
+               title='Month',
+               tickvals=df[df['month'] == 1].index,
+               ticktext=df.loc[df['month'] == 1, 'year'],
+          ),
+          yaxis=dict(
+               title='Monthly Payment ($)',
+               range=[0, 14000],
+               tickvals=list(range(0, 14000, 4000)),
+          ),
+          barmode='stack',
+          legend=dict(x=1, y=1, bgcolor='rgba(255,255,255,0)'),
+          hovermode='x unified',
+          template='plotly_white'
+     )
+     
+     return fig

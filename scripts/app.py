@@ -35,20 +35,23 @@ st.subheader("Below are the results:")
 col1,col2 = st.columns(2)
 with col1:
      st.header(town1)
-     st.pyplot(bar_graph.generate_plot(df_bar, town1))
+     # st.pyplot(bar_graph.generate_plot(df_bar, town1))
+     st.plotly_chart(bar_graph.generate_plot(df_bar, town1), key='first town bar graph')
 
 with col2:
      st.header(town2)
-     st.pyplot(bar_graph.generate_plot(df_bar, town2))
+     # st.pyplot(bar_graph.generate_plot(df_bar, town2))
+     st.plotly_chart(bar_graph.generate_plot(df_bar, town2),key='second town bar graph')
+
 
 st.text("Monthly mortgage payments with and without the program, from 2016 to 2024. We assume that home value = ZHVI (Zillow House Value Index), which measures the typical home value in the given town.")
 
 col1,col2 = st.columns(2)
 with col1:
-     st.pyplot(equality_line_graph.plot_equality_graph(df_equality_line, town1))
+     st.plotly_chart(equality_line_graph.plot_equality_graph(df_equality_line, town1), key='first town equality graph')
 
 with col2:
-     st.pyplot(equality_line_graph.plot_equality_graph(df_equality_line, town2))
+     st.plotly_chart(equality_line_graph.plot_equality_graph(df_equality_line, town2), key = 'second town equality graph')
 
 st.text("Monthly mortgage payment with and without the program, compared with 1/3 of monthly average median income (AMI) for 2016 and 2024.")
 st.text("Note: each point represents the town in a specific year from 2016-2024. Greener points are closer to 2016 and bluer points are closer to 2024. ")
