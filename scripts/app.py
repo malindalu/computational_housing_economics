@@ -26,7 +26,7 @@ with col1:
 with col2:
      # down_payment_percent = st.number_input("Enter your down payment as a percentage of total price (e.g. 50 for 50%):", value=50.00, format="%.2f")/100
      afr_fraction = st.number_input("Enter the fraction of AFR used as the reduced interest rate (Currently, the College sets it at 1/2 AFR)", value = WELLESLEY_AFR_FRACTION)
-df_bar = bar_graph.calculate_monthly_payments(bar_graph.filter_df(df), max_second_loan)
+df_bar = bar_graph.calculate_monthly_payments(bar_graph.filter_df(df), max_second_loan, afr_fraction)
 
 df_equality_line = bar_graph.calculate_monthly_payments(equality_line_graph.filter_df(df))
 

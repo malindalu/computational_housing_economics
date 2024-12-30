@@ -18,7 +18,7 @@ def filter_df(df):
 
      return df
 
-def calculate_monthly_payments(df, max_second_loan = WELLESLEY_MAX_SECOND_LOAN):
+def calculate_monthly_payments(df, max_second_loan = WELLESLEY_MAX_SECOND_LOAN, afr_fraction = WELLESLEY_AFR_FRACTION):
      # Process each town
      for town in TOWNS:
           if town not in df.columns:
@@ -37,10 +37,10 @@ def calculate_monthly_payments(df, max_second_loan = WELLESLEY_MAX_SECOND_LOAN):
                mortgage_amount < max_second_loan,
                # if 50% of applicable amount is the lesser
                # 1/2 at half AFR rate and the other half at the original/given mortgage rate
-               (mortgage_amount * (df['afr_month'] * WELLESLEY_AFR_FRACTION)) + 
+               (mortgage_amount * (df['afr_month'] * afr_fraction)) + 
                ((mortgage_amount) * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1)),
                # else, 550000 max is the lesser
-               (max_second_loan * (df['afr_month'] * WELLESLEY_AFR_FRACTION)) + 
+               (max_second_loan * (df['afr_month'] * afr_fraction)) + 
                ((zhvi_column - max_second_loan) * (df['mr30_1'] * ((1 + df['mr30_1']) ** 360)) / (((1 + df['mr30_1']) ** 360) - 1))
           )
 
